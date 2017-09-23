@@ -1,0 +1,212 @@
+{% extends "piano/base.html" %}
+    <meta charset="UTF-8">
+    <title>{%block title%}{{sheet.music}}{%endblock%}</title>
+	{%load static from staticfiles%}
+    {%block source%}
+	<script type="text/javascript" src="{%static 'piano/js/jquery.fullscreen.js'%}"></script>
+    {%endblock%}
+
+
+{%block js%}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('.bottom_wrap').hide();
+        var win_height = $(window).height();
+        $('.sheet_con').height(win_height);
+
+        $(window).resize(function () {
+            var win_height = $(window).height();
+            $('.sheet_con').height(win_height);
+        });
+
+        /* 导航slide效果  */
+        $(".inv_nav,.sheet_nav").on("mouseover mouseout", function(event){
+          if(event.type == "mouseover"){
+              $('.sheet_nav').stop().slideDown();
+          }else if(event.type == "mouseout"){
+              $('.sheet_nav').stop().slideUp();
+          }
+        });
+
+        /* 书签slide效果 */
+        $(".marker").on("mouseover mouseout", function(event){
+          if(event.type == "mouseover"){
+              $('.marker img').attr('src',"{%static 'piano/images/trans.png'%}");
+          }else if(event.type == "mouseout"){
+              $('.marker img').attr('src',"{%static 'piano/images/normal.png'%}");
+          }
+        });
+
+
+
+        $('.m_sheet:eq(0)').show();
+        var sheet_total = {{sheet.page_num}};
+
+        var now_sheet = 1;
+
+        $('.left_sheet,.right_sheet').click(function () {
+            var t_class = $(this).attr('class');
+
+            if(t_class == 'left_sheet'){
+                if(now_sheet>1){
+                    var str = 'span[alt='+String(now_sheet)+']';
+                    console.info(str);
+                    $('img[alt='+String(now_sheet)+']').hide();
+                    now_sheet -= 1;
+                    $('img[alt='+String(now_sheet)+']').show();
+                    console.info(now_sheet);
+
+                }
+            }
+            else if(t_class == 'right_sheet'){
+                if(now_sheet< sheet_total){
+                        $('img[alt='+String(now_sheet)+']').hide();
+                        now_sheet += 1;
+                        $('img[alt='+String(now_sheet)+']').show();
+                        console.info(now_sheet);
+                }
+            }
+        });
+
+        $('.fullscreen').click(function () {
+            $('body').fullScreen();
+        });
+
+        $('.back').click(function () {
+             history.back();
+        })
+
+
+
+
+
+
+    })
+</script>
+
+{%endblock%}
+{%block style%}
+<style type="text/css">
+    body{
+        background-color: rgb(41,41,41);
+    }
+
+    .nav{
+        display: none;
+    }
+
+    .sheet_nav{
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.8);
+        width: 100%;
+        height: 64px;
+        top: 0;
+        left: 0;
+        z-index: 902;
+    }
+
+    .marker{
+        position: absolute;
+        left: 50%;
+        cursor: pointer;
+    }
+
+    .fullscreen{
+        position: absolute;
+        top: 25%;
+        right: 15%;
+        cursor: pointer;
+    }
+
+    .fullscreen img{
+        width: 90%;
+    }
+
+    .back{
+        position: absolute;
+        top: 25%;
+        left: 5%;
+        cursor: pointer;
+    }
+
+    .back img{
+        width: 80%;
+    }
+
+    .inv_nav{
+        z-index:901;
+        opacity:0;
+        position: fixed;
+        padding: 0 24px;
+        left: 0;
+        top: 0;
+        height: 100px;
+        width: 100%;
+        border-bottom: 2px solid #E9EDF8;
+    }
+
+
+
+    .left_sheet{
+        position: absolute;
+        top: 50%;
+        margin-top: -33px;
+        margin-left: -47px;
+        width: 21px;
+        height: 38px;
+        background-image: url(https://s1-f.scribdassets.com/images/icons/toolbar-arrows.png?1505253522);
+    }
+
+    .right_sheet{
+        position: absolute;
+        top: 50%;
+        margin-top: -33px;
+        margin-left: 27px;
+        width: 21px;
+        height: 38px;
+        background-image: url('https://s1-f.scribdassets.com/images/icons/toolbar-arrows.png?1505253522');
+        background-position: -21px 0;
+    }
+
+    .left_sheet,.right_sheet{
+        cursor: pointer;
+    }
+
+    .sheet_con{
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+    }
+
+    img{
+        width: auto;
+        height: 100%;
+    }
+
+
+</style>
+{%endblock%}
+
+
+{%block body%}
+<div class="sheet_nav">
+    <div class="marker">
+        <img class="" src="{%static 'piano/images/normal.png'%}" alt="">
+    </div>
+    <div class="back"><img src="{%static 'piano/images/back.png'%}" alt=""></div>
+    <div class="fullscreen"><img src="{%static 'piano/images/fullscreen.png'%}" alt=""></div>
+</div>
+<div class="inv_nav"></div>
+
+
+<div class="sheet_con">
+    <span class="left_sheet"></span>
+    {% for i in for_list %}
+    <img class="m_sheet img-responsive" style="display: none;" src="/static/piano/钢琴/{{sheet.album}}/{{sheet.music}}/{{i}}.png" alt="{{i}}">
+    {% endfor %}
+    <span class="right_sheet"></span>
+</div>
+
+
+{%endblock%}

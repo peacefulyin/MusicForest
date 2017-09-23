@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{%load static from staticfiles%}
+	<meta charset="UTF-8">
+	<title>{%block title%}{%endblock%}</title>
+	<link rel="stylesheet" type="text/css" href="{%static 'piano/css/reset.css'%}">
+	<link rel="stylesheet" type="text/css" href="{%static 'piano/css/bootstrap.min.css'%}">
+	<script type="text/javascript" src="{%static 'piano/js/jquery-1.12.4.js'%}"></script>
+	<script type="text/javascript" src="{%static 'piano/js/bootstrap.min.js'%}"></script>
+	<script type="text/javascript" src="{%static 'piano/js/jquery.cookie.js'%}"></script>
+	{%block source%}{%endblock%}
+
+</head>
+<script type="text/javascript">
+	$(document).ready(function () {
+		/* 登录逻辑 */
+		var islogin = $.cookie('islogin');
+
+	    if(islogin == 'True'){
+	        $('.nav_right .nav_signin, .nav_right .nav_join').hide();
+
+	        $('.pop_top_unlogin').hide();
+	        $('.pop_top_login').show();
+		}else{
+	        $('.nav_right .nav_signin, .nav_right .nav_join').show();
+	        $('.nav_right .nav_head').hide();
+
+	        $('.pop_top_unlogin').show();
+	        $('.pop_top_login').hide();
+		}
+
+		$('.nav_head,.nav_slide').hover(function () {
+			$('.nav_slide').stop().slideDown()
+        }, function () {
+			$('.nav_slide').stop().slideUp()
+        });
+
+
+	    /* 登录逻辑 */
+
+		$('.to_up,.to_in').click(function (event) {
+			if(event.target.className == 'to_up'){
+			    $('.sign_up').show();
+				$('.sign_in').hide();
+			}else if(event.target.className == 'to_in'){
+				$('.find_pass').hide();
+			    $('.sign_in').show();
+				$('.sign_up').hide();
+
+			}
+
+        });
+
+        $('.nav_signin, .nav_join, .pop_signup,.forgot_pass').click(function (event) {
+            $('.full_over').show();
+            if(event.target.className == 'nav_join'){
+			    $('.sign_up').show();
+				$('.sign_in').hide();
+				return false;
+			}else if(event.target.className == 'nav_signin'){
+			    $('.sign_in').show();
+				$('.sign_up').hide();
+				return false;
+			}else if(event.target.className == 'pop_signup'){
+			    $('.pop_up').hide();
+				$('.sign_up').show();
+				return false;
+			}else if(event.target.className == 'forgot_pass'){
+			    $('.sign_in').hide();
+				$('.find_pass').show();
+				return false;
+			}
+        });
+
+        $('.sign_in, .sign_up, .find_pass').click(function (event) {
+            event.stopPropagation();
+        });
+
+        /* 登录验证*/
+		$('.in_form, .find_passform').submit(function (event) {
+		    event.preventDefault();
+		    if(event.target.className == 'in_form'){
+				var name = $(this).find('#inname').val();
+				var password = $(this).find('#inpassword').val();
+				data = {'name':name, 'password':password};
+				$.post("/login/signin",data ,function (dict) {
+					if(dict.hasOwnProperty('wrong')){
+						$('.sign_in .remind').text(dict.wrong).show();
+					}else if (dict.hasOwnProperty('true')){
+						window.location.reload()
+					}
+				});
+
+			}else if(event.target.className == 'find_passform'){
+		        var name = $(this).find('#vername').val();
+		        $.get('/findpass/'+name,function (dict) {
+					if(dict.hasOwnProperty('wrong')){
+						$('.find_pass .remind').text(dict.wrong).show();
+					}else if (dict.hasOwnProperty('true')){
+						$('.find_pass .remind').text('邮箱已经发送到'+dict.true+',前往验证').css({'font-size':'22px'}).show().siblings().hide();
+						$('.find_pass .sign_title').text('邮箱已经发送,前往验证');
+						$('.find_pass .fsubmit').hide();
+					}
+                })
+			}
+
+        });
+
+		$('#inname, #inpassword').focus(function () {
+			$('.remind').hide();
+        });
+
+		/* 找回密码验证
+		$('.in_form').submit(function (event) {
+		    event.preventDefault();
+		    var name = $(this).find('#inname').val();
+		    var password = $(this).find('#inpassword').val();
+		    data = {'name':name, 'password':password};
+			$.post("/login/signin",data ,function (dict) {
+			    if(dict.hasOwnProperty('wrong')){
+			        $('.remind').text(dict.wrong);
+					$('.remind').show();
+				}else if (dict.hasOwnProperty('true')){
+			        window.location.reload()
+				}
+
+            });
+
+        }); */
+
+
+
+
+	    $('.quit_login').click(function () {
+			$.get('/login/quit',function (dict) {
+				if(dict.hasOwnProperty('true')){
+				    $.cookie('islogin','False');
+				    window.location.reload();
+				}
+            })
+        });
+
+
+
+
+    })
+</script>
+
+	{%block js%}{%endblock%}
+	{%block style%}{%endblock%}
+
+<style type="text/css">
+	a:hover{
+		text-decoration: none;
+	}
+
+	.nav{
+		background-color: #FAFBFD;
+		position: fixed;
+		padding: 0 24px;
+		left: 0;
+		top: 0;
+		height: 60px;
+		width: 100%;
+		border-bottom: 2px solid #E9EDF8;
+	}
+	.nav a{
+		display: inline-block;
+	}
+
+	.nav .logo{
+		line-height: 60px;
+		width: 117px;
+    	height: 26px;
+	}
+
+	.search_con{
+		margin-left: 100px;
+		display: inline-block;
+	}
+
+
+	.search_input{
+		background: none;
+		width: 200px;
+		border-radius: 4px;
+		color: #1C263D;
+		font-weight: normal;
+		font-size: 16px;
+		height: 1.875em;
+		padding-bottom: 0;
+		padding-left: 1.875em;
+		padding-top: 0;
+	}
+
+	.search_con .nav_sub{
+		margin-left: -7px;
+		cursor: pointer;
+		font-weight: bold;
+		text-transform: capitalize;
+		background-color: #20828D;
+		color: #fff;
+		border-left: none;
+		border-top-right-radius: 4px;
+		border-bottom-right-radius: 4px;
+
+	}
+
+	.nav .explore{
+		margin-left: 30px;
+	}
+
+	.nav_right{
+		float: right;
+	}
+
+	.nav_head{
+		display: inline-block;
+		margin-right: 200px;
+		height: 50px;
+		width: auto;
+	}
+
+	.nav_slide{
+		background-color: #eeeeee;
+		position: absolute;
+		right: 80px;
+		padding: 20px 30px;
+	}
+
+	.quit_login{
+
+		margin-top: 10px;
+		font-size:20px; ;
+		text-align: right;
+	}
+
+	.quit_login span{
+		cursor: pointer;
+	}
+
+	.quit_login span:hover{
+		color: #20828D;;
+	}
+
+	.nav_right img{
+		width: auto;
+		height: 100%;
+	}
+
+
+	.nav_signin, .nav_join{
+		cursor: pointer;
+		font-size: 18px;
+		font-weight: bold;
+		min-height: 2.44444em;
+		line-height: 2.44444em;
+		min-width: 120px;
+		padding: 0px 30px;
+		text-align: center;
+
+		display: inline-block;
+		border-color: #0D6069;
+		color: #0D6069;
+		margin: 5px 20px;
+		background-color: rgba(0, 0, 0, 0);
+		border: 1px solid #20828D;
+		border-radius: 5%;
+		text-decoration: none;
+	}
+
+	
+	.bottom_wrap{
+		position: relative;
+		bottom: 0;
+		height: 350px;
+		width: 100%;
+		background: #F8F9FD;
+		border-top: 2px solid #E9EDF8;
+		text-align: center;
+	}
+
+</style>
+
+<body>
+<div class="nav">
+	<a class="logo" href="/home"><img src="https://s1-f.scribdassets.com/images/landing/home2_landing/scribd_logo_horiz_small.svg?1504907137" alt=""></a>
+	<div class="search_con">
+		<form method='get' action="/search/" target="_blank">
+			<input class="search_input" type="text" name="q">
+			<input class="nav_sub" type="submit" value="确定">
+		</form>
+	</div>
+	<div class="nav_right">
+		<a class="nav_head" href="" onclick="return false"><img src="{%static 'piano/images/userhead.png'%}" alt=""></a>
+		<a class="nav_signin" href="">登 录</a>
+		<a class="nav_join" href="">注 册</a>
+		<div class="nav_slide" style="display: none">
+			<a class="slide_head" onclick="return false" href=""><img src="{%static 'piano/images/userhead.png'%}" alt=""></a>
+			<div class="quit_login"><span >退出</span></div>
+
+		</div>
+	</div>
+</div>
+
+{%block body%}{%endblock%}
+
+
+<div class="bottom_wrap"></div>
+
+	
+</body>
+</html>

@@ -1,0 +1,826 @@
+{% extends "piano/base.html" %}
+
+	<meta charset="UTF-8">
+	<title>{%block title%}All Piano List{%endblock%}</title>
+	{%load static from staticfiles%}
+
+
+
+
+{% block js %}
+<script type="text/javascript">
+	$(document).ready(function () {
+
+
+	    /* 专辑弹出层逻辑*/
+
+		$('.object_list,.document_cell').click(function () {
+			var album = $(this).find('.document_title').text();
+			var this_img = $(this).find('img');
+			var link = this_img.attr('src');
+			var pop_img = $('.pop_img img');
+			var aniHeight = $(this).offset().top-300;
+
+			pop_img.attr('src',link);
+
+			$('.pop_img img, .img_con img').error(function(){
+				$(this).attr('src','/static/piano/images/common.png')
+					});
+
+			$.get('/album/'+album,function (dict) {
+			    var proto = $('.music_list ul li:eq(0)');
+
+			    $('.pop_up .pop_title h1').text(dict['list'][0]['album']);
+				$('.pop_up .song_num').text(dict['list'][0]['page_num']);
+
+				/*音乐列表 */
+				$.each(dict['list'], function (index, item) {
+					var li = proto.clone(true);
+					li.attr('display','block');
+					li.find('.music_name').text(item.music);
+					li.find('.music_num').text(item.page_num);
+					li.find('a').attr('href','/musicSheet/'+item.music);
+					$('.music_list ul').prepend(li);
+                });
+				proto.remove();
+
+				/* 下方推荐 */
+				$('.carousel li').remove();
+				$.each(dict['recommend'], function (index, item) {
+					console.info(index);
+					var li =$('.pop_model:eq(0)').clone(true);
+					var src = "/static/piano/钢琴/"+item.album +"/" +item.album+".png";
+					li.find('.img_con img').attr('src',src);
+					li.find('.m_album').text(item.album);
+					$('.pop_bottom .carousel').prepend(li);
+                });
+
+				$('.pop_bottom .document_cell').show();
+
+
+				var li_num = $('.music_list ul li').length;
+
+				if(li_num >= 5){
+				    $('.music_list ul li:gt(4)').hide();
+				}
+				else {
+				    $('.l_more').hide();
+				}
+
+				$('.bottom_wrap').hide();
+				$('.pop_up').animate({'top':aniHeight});
+				$('.pop_up').show();
+				$('.full_over').show()
+            });
+        });
+
+		$('.l_more').click(function () {
+			$('.music_list ul li').show();
+			$(this).hide();
+		});
+
+
+		$(document).click(function(){
+			$('.pop_up').hide();
+			$('.sign_up').hide();
+            $('.sign_in').hide();
+            $('.find_pass').hide();
+			$('.full_over').hide()
+		});
+
+		$('.pop_close').click(function () {
+			$('.pop_up').hide();
+			$('.full_over').hide()
+		});
+
+		$('.pop_main').click(function (event) {
+			event.stopPropagation();
+		});
+
+		/* 随机星星逻辑 */
+		$.cookie('star','freez');
+		if($.cookie('star') == 'freez'){
+		    $('.stars').each(function () {
+		     var x = 5;
+			 var y = 1;
+			 var rand = parseInt(Math.random() * (x - y + 1) + y);
+			 var select = 'span:lt('+ String(rand)+')';
+			$(this).find(select).css('background-position','0 -20px');
+        	});
+		}
+
+    })
+</script>
+{%block searchjs%}
+{%endblock searchjs%}
+{% endblock %}
+
+
+
+
+{%block style%}
+<style type="text/css">
+
+	.full_over{
+		display: none;
+		position: fixed;
+		opacity: 0.5;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		background: rgba(87, 97, 122, 0.75);
+		z-index: 901;
+	}
+
+	.nav{
+		z-index: 900;
+	}
+
+	.banner{
+		margin-top: 60px;
+		height: 260px;
+		background-color: #eee;
+		background: url(https://imgv2-1-f.scribdassets.com/img/category_theme_header/52/1140x260/6fbdea2a9d/1473445615) no-repeat;
+	    width:100%;
+		overflow: hidden;
+		background-size:cover;
+	}
+
+	.banner_title{
+		display: inline-block;
+		position: relative;
+		left: 25%;
+		top: 60%;
+		padding: 0 12px;
+		background: #1C263D;
+		color: white;
+	}
+
+	.banner_title span{
+		font-size: 32px;
+		font-weight: bold;
+	}
+
+	.main_wrap{
+		padding: 0 24px;
+		margin-top: 46px;
+	}
+
+	.filter_pickers{
+		    line-height: 35px;
+		    font-size: 16px;
+		    cursor: pointer;
+	}
+
+	.object_list{
+		margin-right: 24px;
+		height: 200px;
+		border-top:1px solid #ccc;
+		transition: background-color ease 0.3s;
+
+	}
+
+	.object_list:hover{
+		background-color:rgb(250,251,253);
+	}
+
+
+	.list_anchor{
+		padding: 24px 50px 24px 24px;
+		display: block;
+	}
+
+	.sheet_img{
+		width: 110px;
+		height: auto;
+		float: left;
+		border-radius: 5%;
+	}
+	
+
+
+	.right_info{
+		padding-left: 24px;
+		display: inline-block;
+	}
+	
+	.right_info h3{
+	    color: #000514;
+    	margin: 6px 0;
+    	font-size: 20px;
+	    line-height: 1.25em;
+	    max-height: 1.25em;
+	    overflow: hidden;
+	}
+
+	.stars span{
+		display: inline-block;
+		width: 20px;
+		height:20px;
+		background-image: url('/static/piano/images/starts.png');
+		background-size: 100%;
+	}
+
+
+
+	.author{
+		color:rgb(28, 38, 61);
+    	font-weight: normal;
+	}
+	
+	.song_num span{
+   		color: #57617A;
+    	text-transform: uppercase;
+	}
+
+	/* pop*/
+	.pop_up{
+		position: absolute;
+		left: 400px;
+		top: 200px;
+		z-index: 902;
+		display: none;
+	}
+
+
+	.pop_main{
+		margin-top: 150px;
+		padding: 0;
+	}
+
+
+	.pop_top{
+		background-color: white;
+		height: 165px;
+	    padding: 26px 48px 28px;
+	    background: #F8F9FD;
+	    border-bottom: 1px solid #E9EDF8;
+	    border-top-left-radius: 4px;
+	    border-top-right-radius: 4px;
+	}
+
+	.pop_close{
+		display: inline-block;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 44px;
+		height:44px;
+		padding: 10px;
+		font-size: 30px;
+		color:#4c4c4c;
+		cursor: pointer;
+
+	}
+
+	.pop_top h2{
+	    font-size: 22px;
+	    margin-bottom: 3px;
+    	font-weight: normal;
+	}
+
+	.pop_top a{
+		display: inline-block;
+	    background-color: transparent;
+	    border: 1px solid #20828D;
+	    padding: 0 30px;
+	    color: #20828D;
+	    height: 43px;
+	    text-decoration: none;
+	    line-height: 43px;
+	    font-size: 16px;
+	}
+
+	.top_2{
+		margin-bottom: 12px;
+	}
+
+	.pop_middle1{
+		background-color:white;
+		height: 365px;
+	    padding: 48px;
+	    padding-bottom: 60px;
+	    border-bottom: 1px solid #E9EDF8;
+
+	}
+
+	.pop_middle1 h1{
+		margin: 0;
+	    font-size: 26px;
+	    line-height: 32px;
+	    font-weight: bold;
+	    color: #1C263D;
+	}
+
+	.pop_img{
+		width: 195px;
+		height:250px;
+	}
+
+	.pop_img img{
+		max-width:100%;
+	}
+
+
+	.pop_middle1 .author{
+		margin:7px 0;
+		font-weight: bold;
+	}
+
+	.pop_middle1 .sh_disc{
+		padding-top:20px;
+		border-top: 1px solid #E9EDF8;
+		margin-bottom: 66px;
+	}
+
+	.tab_list{
+		height: 50px;
+		text-align: center;
+	    border-bottom: 1px solid #E9EDF8;
+    	background-color: #F8F9FD;
+	}
+
+	.tab_list a{
+			padding: 0 15px;
+			line-height: 50px;
+			display: inline-block;
+    		color: #0D6069;
+	}
+
+	.pop_middle2{
+		background-color: white;
+		padding: 40px 48px 60px;
+	}
+
+	.pop_middle2 .music_icon{
+		height: 130px;
+		text-align: center;
+	}
+
+	.pop_middle2 .music_list{
+	    border-top: 1px dashed #E9EDF8;
+	    padding: 40px 0;
+	}
+
+	.music_list .table_span{
+		text-align: center;
+		margin: 14px 0 18px 0;
+	}
+
+	.music_list li{
+		padding: 1px 32px;
+		cursor: pointer;
+	}
+
+	.music_list li span{
+		color: #57617A;
+		font-size: 16px;
+		line-height: 40px;
+
+	}
+
+	.music_list li:hover{
+		background-color: rgb(248,249,253);
+	}
+
+	.music_list .music_num{
+		float: right;
+	}
+
+	.l_more{
+		display: block;
+		padding-left: 32px;
+	    color: #20828D;
+	    text-decoration: none;
+	    cursor: pointer;
+	    font-weight: bold;
+	    font-size: 14px;
+
+	}
+
+	.disc_title{
+		text-align: center;
+		margin:18px 0 20px 0;
+	}
+
+	.disc_content{
+		padding: 0 32px 36px;
+	}
+
+	.pop_bottom{
+		background-color: white;
+		margin-top: 24px;
+		margin-top: 25px;
+	}
+
+	.pop_bottom .recommend{
+		padding: 65px 55px 35px;
+	}
+
+	.pop_bottom .rec_title{
+		font-size: 18px;
+	    font-weight: normal;
+	    margin-bottom: 4px;
+	}
+
+	.rec_banner{
+		height: 250px;
+	}
+
+	.pop_bottom li{
+		margin-right: 80px;
+	}
+
+			/* 登录  */
+	.sign_up,.sign_in,.find_pass{
+		position: fixed;
+		left: 40%;
+		top: 20%;
+		background-color: #fff;
+		overflow-y: auto;
+		width: 400px;
+		height: auto;
+		margin: 0 auto;
+		z-index: 902;
+	}
+
+	.innercon{
+		padding: 32px 40px 54px;
+	}
+
+	.sign_up h2,.sign_in h2,.find_pass h2{
+		font-size: 24px;
+		font-weight: bold;
+		color: #1C263D;
+		margin-top: 10px;
+		margin-bottom: 20px;
+		padding-bottom: 20px;
+		text-align: center;
+		border-bottom: 1px solid #57617A;
+	}
+
+	.flable span{
+		color: #1C263D;
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.finput{
+		margin-top: 4px;
+	}
+
+	.finput input{
+		outline: none;
+		border-radius: 4px;
+		border: solid 1px #8F929E;
+		padding: 8px 14px;
+		width: 100%;
+		height: 40px;
+		box-sizing: border-box;
+		margin-bottom: 18px;
+	}
+
+	.fcheck{
+		margin-top: 5px;
+    	margin-right: 10px;
+	}
+
+	.send_me{
+		color: #1C263D;
+    	font-size: 14px;
+	}
+
+	.botton_con{
+	    margin: 18px 0;
+	}
+
+	.fsubmit{
+		display: block;
+    	width: 100%;
+		box-sizing: border-box;
+		border-color: rgba(255, 255, 255, 0.2);
+		border-radius: 4px;
+		border-style: solid;
+		border-width: 1px;
+		cursor: pointer;
+		font-size: 18px;
+		font-weight: bold;
+		min-height: 2.44444em;
+		line-height: 2.44444em;
+		min-width: 120px;
+		padding: 0px 30px;
+		text-align: center;
+		text-transform: capitalize;
+		background-color: #20828D;
+		color: #fff;
+	}
+
+	.login_alt{
+	    margin: 18px -40px -54px;
+		padding: 30px;
+		background-color: #F8F9FD;
+		text-align: center;
+	}
+
+	.login_alt span{
+		color: #1C263D;
+    	font-size: 16px;
+	}
+
+	.login_alt a{
+		color: #20828D;
+		text-decoration: none;
+		cursor: pointer;sor: pointer;
+		font-weight: bolder;
+	}
+
+	.forgot_password{
+		text-align: center;
+		font-weight: bold;
+		color: #509ba8;
+		cursor: pointer;
+		font-size: 16px;
+
+	}
+
+
+
+	.carousel {
+		overflow: hidden;
+	    white-space: nowrap;
+	}
+
+	.document_cell{
+		width: auto;
+	   	margin-right: 16px;
+	   	display: inline-block;
+	    font-size: 16px;
+	    vertical-align: top;
+	    white-space: normal;
+	}
+
+	.img_con img{
+		width: 150px;
+		height: auto;
+		border-radius: 5%;
+
+	}
+
+	.under_title{
+		width: 150px;
+		color: #1C263D;
+		margin-top: 10px;
+		text-align: left;
+	    font-size: 14px;
+	    line-height: 1.5em;
+	    max-height: 1.5em;
+		overflow: hidden;
+    	text-overflow: ellipsis;
+    	white-space:nowrap;
+	}
+
+
+</style>
+{%block searchstyle%}
+{%endblock%}
+
+{%endblock%}
+
+{%block body%}
+	<div class="full_over"></div>
+	<li class="document_cell pop_model " style="display: none;">
+		<a href="" onclick="return false" >
+			<div class="img_con"><img class="img-responsive" src = "" alt=""></div>
+			<div>
+				<div class="m_album document_title under_title">lala</div>
+				<div class="under_title">(Piano)</div>
+			</div>
+		</a>
+	</li>
+
+	<div class="sign_up" style="display: none;">
+		<div class="innercon">
+		<h2 class="sign_title">注册然后开始吧 </h2>
+		<form action="/login/signup" method="post">
+			{% csrf_token %}
+
+				<div class="inputs">
+					<div>
+						<div class="flable"><span>用户名</span></div>
+						<div class="finput" ><input type="text" id="upname" name="upname"></div>
+					</div>
+					<div>
+						<div class="flable"><span>邮箱</span></div>
+						<div class="finput" ><input type="email" id="upemail" name="upemail"></div>
+					</div>
+					<div>
+						<div class="flable"><span>密码</span></div>
+						<div class="finput" ><input type="password" id="uppassword" name="uppassword"></div>
+					</div>
+					<div>
+						<input type="checkbox" class="fcheck" name="optin">
+						<span class="send_me">给我发送推荐邮件</span>
+					</div>
+				</div>
+				<div class="botton_con">
+					<button class="fsubmit" type="submit">
+						<span>注册</span>
+					</button>
+				</div>
+				<div class="login_alt">
+					<div>
+						<span>已经有账号?</span>
+						<a href="#" class="to_in">登录</a>
+					</div>
+				</div>
+		</form>
+		</div>
+	</div>
+
+	<div class="sign_in" style="display: none;">
+		<div class="innercon">
+		<h2 class="sign_title">登 录</h2>
+		<form class="in_form" action="/login/signin" method="post">
+			{% csrf_token %}
+				<div class="inputs">
+					<div>
+						<div class="flable"><span>用户名/邮箱</span></div>
+						<div class="finput" ><input type="text" id="inname" name="inname"></div>
+					</div>
+					<div>
+						<div class="flable"><span>密码</span></div>
+						<div class="finput" ><input type="text" id="inpassword" name="inpassword"></div>
+					</div>
+					<div class="remind" style="display: none"></div>
+				</div>
+				<div class="botton_con">
+					<button class="fsubmit" type="submit">
+						<span>登录</span>
+					</button>
+				</div>
+				<div class="forgot_password"><a class="forgot_pass" href="#">忘记密码?</a></div>
+				<div class="login_alt">
+					<div>
+						<span>还没有账号?</span>
+						<a href="#" class="to_up">注册</a>
+					</div>
+				</div>
+		</form>
+		</div>
+	</div>
+
+	<div class="find_pass" style="display: none;">
+		<div class="innercon">
+			<h2 class="sign_title">输入用户名或密码 </h2>
+			<form class="find_passform" action="/findpass" method="post">
+				{% csrf_token %}
+
+					<div class="inputs">
+						<div>
+							<div class="flable"><span>用户名/密码</span></div>
+							<div class="finput" ><input type="text" id="vername" name="vername"></div>
+						</div>
+						<div class="remind" style="display: none"></div>
+					</div>
+					<div class="botton_con">
+						<button class="fsubmit" type="submit">
+							<span>发送验证邮件</span>
+						</button>
+					</div>
+					<div class="login_alt">
+						<div>
+							<span>回到登录?</span>
+							<a href="#" class="to_in">登录</a>
+						</div>
+					</div>
+			</form>
+		</div>
+	</div>
+
+
+
+
+	<div class="banner">
+		<div class="banner_title">
+			<span>琴乐之森</span>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="main_wrap col-md-12">
+				<div class="filter_pickers">
+					Sort: Bestselling 
+				</div>
+				<ul>
+					{%block searchbody%}
+					{%endblock searchbody%}
+					{% for each in sheet%}
+					<li class="object_list">
+						<a href="" onclick="return false" class="list_anchor">
+							<div><img class="sheet_img" src="/static/piano/钢琴/{{each.album}}/{{each.album}}.png" alt=""></div>
+							<div class="right_info">
+								<h3 class="title document_title">{{each.album}}</h3>
+								<div><span class="author" ></span></div>
+								<div class="star_ratings">
+									<span class="stars">
+										<span></span>
+										<span></span>
+										<span></span>
+										<span></span>
+										<span></span>
+									</span>
+									<span class="stats"></span>
+								</div>
+								<div class="song_num"><span>{{each.music}} songs</span></div>
+							</div>
+						</a>
+					</li>
+					{%endfor%}
+
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="container pop_up">
+		<div class="row">
+			<div class="pop_main col-md-10 col-md-offset-1 ">
+
+					<div class="pop_top">
+						<div><h2>寻找你的最爱</h2></div>
+						<div class="top_2"><span>注册来激活 30 天的体验时间.</span></div>
+						<div ><a class="pop_signup" href="" onclick="return false">前往注册</a></div>
+						<span class="pop_close">X</span>
+					</div>
+					<div class="pop_top" style="display: none;">
+						<div><h2>寻找你的最爱</h2></div>
+						<div class="top_2"><span>你正在进行免费体验, 还剩 30 天</span></div>
+						<div><a href="">点击续费</a></div>
+						<span class="pop_close">X</span>
+					</div>
+					<div class="pop_middle1">
+						<div class="row">
+							<div class="pop_img col-md-3"><img class="img-responsive"  alt=""></div>
+							<div class="col-md-8">
+								<div class="pop_title"><h1></h1></div>
+								<div class="author"><span>by</span><span></span>&nbsp;musician</div>
+								<div class="sh_disc">
+									<div class="star_ratings">
+									<span class="stars">
+										<span></span>
+										<span></span>
+										<span></span>
+										<span></span>
+										<span></span>
+									</span>
+									<span class="stats"></span>
+								</div>
+									<span class="rating"></span>本曲单包含
+									<span class="song_num"></span>首 精品曲目,请慢用.</div>
+							</div>
+						</div>
+					</div>
+					<div class="tab_list">
+						<a href="">总览</a>
+						<a href="">评论</a>
+					</div>
+					<div class="pop_middle2">
+						<div class="music_icon">
+							<div><span>爱 & 和平</span></div>
+							<div class="music_icons">
+								<a href=""><span></span><span>Advanced</span></a>
+								<a href=""><span></span><span>Piano</span></a>
+							</div>
+						</div>
+						<div class="music_list">
+							<div class="table_span"><span>作品列表</span></div>
+							<ul>
+								<li class="clone_li" ><a href=""><span class="music_name">Angel</span><span class="music_num">1</span></a></li>
+							</ul>
+							<a class="l_more" onclick="return false" href="">Load more</a>
+						</div>
+						<div class="disc_title"><span>来自出版人的话</span></div>
+						<div class="disc_content"><p>(Cheat Sheets). The Hal Leonard Cheat Sheets series includes all the "must know" intros and interludes, plus lyrics and chords. All the songs are presented in an easy to read format with minimal page turns. Enjoy learning to play songs more easily than ever with this cut-to-the-chase notation! This piano edition includes: All the Right Moves * Bad Romance * California Gurls * Drops of Jupiter (Tell Me) * Every Teardrop Is a Waterfall * Fireflies * Grenade * Hey, Soul Sister * I Believe I Can Fly * Jar of Hearts * Love Song * Need You Now * 100 Years * Rolling in the Deep *... </p></div>
+						<div><span></span></div>
+					</div>
+
+
+					<div class="pop_bottom">
+						<div class="recommend">
+							<div class="rec_title"><span>相似的曲单</span></div>
+							<div class="rec_banner">
+								<ul class="carousel">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+
+			</div>
+		</div>
+	</div>
+	
+
+{%endblock%}
